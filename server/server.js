@@ -8,8 +8,6 @@ const cors = require('cors');
 const app = express();
 
 // Middleware
-app.use(cors({ origin: "https://frontend-olive-chi-14.vercel.app/" }));
-
 app.use(cors());
 app.use(express.json());
 
@@ -41,14 +39,11 @@ const Casual = mongoose.model('Casual', casualSchema);
 app.get('/casuals', async (req, res) => {
   try {
     const casuals = await Casual.find();
-    console.log("✅ Casuals Data Fetched:", casuals); // Debugging
     res.json(casuals);
   } catch (err) {
-    console.error("❌ Database Fetch Error:", err);
-    res.status(500).send(`Error fetching data: ${err.message}`);
+    res.status(500).send('Error fetching data');
   }
 });
-
 
 const partyWearSchema = new mongoose.Schema({
     name: String,
@@ -113,7 +108,9 @@ app.get('/traditionalwears', async (req, res) => {
 });
 
 
+// Define a dress schema (without comments)
 const dressSchema = new mongoose.Schema({
+  _id:{  type:String ,required: true},
   name: { type: String, required: true },
   price: { type: Number, required: true },
   image: { type: String, required: true },
@@ -125,70 +122,57 @@ const dressSchema = new mongoose.Schema({
 
 const Dress = mongoose.model('Dress', dressSchema);
 
-// Define Comment Schema
+// Define the comment schema
 const commentSchema = new mongoose.Schema({
-  dressId: { type: mongoose.Schema.Types.ObjectId, ref: 'Dress' }, 
+  dressId: { type: String, ref: 'Dress' }, 
   text: { type: String, required: true },
   rating: { type: Number, min: 1, max: 5, required: true },
-  user: { type: String, default: "Anonymous" },
+  user: { type: String, default: "Anonymous" }, // Set default value
   date: { type: Date, default: Date.now }
 });
 
 const Comment = mongoose.model('Comment', commentSchema);
 
-// Fetch a single dress by ID
+// Fetch a single dress
 app.get('/dresses/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-    
-    // Check if ID is a valid ObjectId before querying
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ error: "Invalid Dress ID format" });
-    }
-
-    const dress = await Dress.findById(id);
-    
+    const dress = await Dress.findById(req.params.id);  // Fetch by ID
     if (!dress) {
-      return res.status(404).json({ error: "Dress not found" });
+      return res.status(404).send('Dress not found');  // Return 404 if not found
     }
-
-    res.json(dress);
+    res.json(dress);  // Return the dress details
   } catch (err) {
     console.error("Error fetching dress:", err);
-    res.status(500).json({ error: "Error fetching dress details" });
+    res.status(500).send('Error fetching dress details');
   }
 });
+
 
 // Fetch comments for a specific dress
 app.get('/comments/:id', async (req, res) => {
   try {
-    const dressId = new mongoose.Types.ObjectId(req.params.id);  // Convert to ObjectId
-    const comments = await Comment.find({ dressId });
+    const comments = await Comment.find({ dressId: req.params.id });
     res.json(comments);
   } catch (err) {
-    console.error('Error fetching comments:', err);
-    res.status(500).json({ error: 'Error fetching comments' });
+    res.status(500).send('Error fetching comments');
   }
 });
 
 // Add a new comment to a dress
 app.post('/comments/:id', async (req, res) => {
   try {
-    const dressId = new mongoose.Types.ObjectId(req.params.id);  // Convert to ObjectId
     const { user, text, rating } = req.body;
-    
     const newComment = new Comment({
-      dressId,
+      dressId: req.params.id,
       user,
       text,
       rating
     });
 
     await newComment.save();
-    res.status(201).json({ message: 'Comment added successfully', comment: newComment });
+    res.status(201).send('Comment added successfully');
   } catch (err) {
-    console.error('Error adding comment:', err);
-    res.status(500).json({ error: 'Error adding comment' });
+    res.status(500).send('Error adding comment');
   }
 });
 // Set the server to listen on a port
