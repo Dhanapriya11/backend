@@ -139,27 +139,36 @@ const commentSchema = new mongoose.Schema({
 const Comment = mongoose.model('Comment', commentSchema);
 
 // Fetch a single dress
+// Fetch a single dress
 app.get('/dresses/:id', async (req, res) => {
   try {
-    const dress = await Dress.findById(req.params.id);  // Fetch by ID
+    console.log(`🔍 Fetching dress with ID: ${req.params.id}`);
+    const dress = await Dress.findById(req.params.id);
+    
     if (!dress) {
-      return res.status(404).send('Dress not found');  // Return 404 if not found
+      console.error(`❌ Dress not found for ID: ${req.params.id}`);
+      return res.status(404).send('Dress not found');
     }
-    res.json(dress);  // Return the dress details
+    
+    console.log("✅ Dress Data Fetched:", dress);
+    res.json(dress);
   } catch (err) {
-    console.error("Error fetching dress:", err);
-    res.status(500).send('Error fetching dress details');
+    console.error(`❌ Error fetching dress with ID ${req.params.id}:`, err);
+    res.status(500).send(`Error fetching dress details: ${err.message}`);
   }
 });
-
 
 // Fetch comments for a specific dress
 app.get('/comments/:id', async (req, res) => {
   try {
+    console.log(`🔍 Fetching comments for Dress ID: ${req.params.id}`);
     const comments = await Comment.find({ dressId: req.params.id });
+    
+    console.log("✅ Comments Data Fetched:", comments);
     res.json(comments);
   } catch (err) {
-    res.status(500).send('Error fetching comments');
+    console.error(`❌ Error fetching comments for Dress ID ${req.params.id}:`, err);
+    res.status(500).send(`Error fetching comments: ${err.message}`);
   }
 });
 
@@ -167,6 +176,8 @@ app.get('/comments/:id', async (req, res) => {
 app.post('/comments/:id', async (req, res) => {
   try {
     const { user, text, rating } = req.body;
+    console.log(`📝 Adding comment for Dress ID: ${req.params.id}`);
+    
     const newComment = new Comment({
       dressId: req.params.id,
       user,
@@ -175,11 +186,14 @@ app.post('/comments/:id', async (req, res) => {
     });
 
     await newComment.save();
+    console.log("✅ Comment Added:", newComment);
     res.status(201).send('Comment added successfully');
   } catch (err) {
-    res.status(500).send('Error adding comment');
+    console.error(`❌ Error adding comment for Dress ID ${req.params.id}:`, err);
+    res.status(500).send(`Error adding comment: ${err.message}`);
   }
 });
+
 // Set the server to listen on a port
 const PORT = 4000;
 app.listen(PORT, () => {
