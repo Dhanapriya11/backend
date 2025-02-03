@@ -6,6 +6,7 @@ const cors = require('cors');
 
 // Create an express app
 const app = express();
+app.use(cors({ origin: "https://frontend-rgca-j02dphsiv-dhanas-projects-05abc89c.vercel.app/" }));
 
 // Middleware
 app.use(cors());
