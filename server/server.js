@@ -8,6 +8,8 @@ const cors = require('cors');
 const app = express();
 
 // Middleware
+app.use(cors({ origin: "https://frontend-olive-chi-14.vercel.app/" }));
+
 app.use(cors());
 app.use(express.json());
 
