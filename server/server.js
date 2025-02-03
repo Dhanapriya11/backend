@@ -139,14 +139,23 @@ const Comment = mongoose.model('Comment', commentSchema);
 // Fetch a single dress by ID
 app.get('/dresses/:id', async (req, res) => {
   try {
-    const dress = await Dress.findById(req.params.id);
-    if (!dress) {
-      return res.status(404).json({ message: 'Dress not found' });
+    const { id } = req.params;
+    
+    // Check if ID is a valid ObjectId before querying
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid Dress ID format" });
     }
+
+    const dress = await Dress.findById(id);
+    
+    if (!dress) {
+      return res.status(404).json({ error: "Dress not found" });
+    }
+
     res.json(dress);
   } catch (err) {
     console.error("Error fetching dress:", err);
-    res.status(500).json({ error: 'Error fetching dress details' });
+    res.status(500).json({ error: "Error fetching dress details" });
   }
 });
 
