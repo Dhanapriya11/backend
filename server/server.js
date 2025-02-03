@@ -113,9 +113,7 @@ app.get('/traditionalwears', async (req, res) => {
 });
 
 
-// Define a dress schema (without comments)
 const dressSchema = new mongoose.Schema({
-  _id:{  type:String ,required: true},
   name: { type: String, required: true },
   price: { type: Number, required: true },
   image: { type: String, required: true },
@@ -127,73 +125,63 @@ const dressSchema = new mongoose.Schema({
 
 const Dress = mongoose.model('Dress', dressSchema);
 
-// Define the comment schema
+// Define Comment Schema
 const commentSchema = new mongoose.Schema({
   dressId: { type: mongoose.Schema.Types.ObjectId, ref: 'Dress' }, 
   text: { type: String, required: true },
   rating: { type: Number, min: 1, max: 5, required: true },
-  user: { type: String, default: "Anonymous" }, // Set default value
+  user: { type: String, default: "Anonymous" },
   date: { type: Date, default: Date.now }
 });
 
 const Comment = mongoose.model('Comment', commentSchema);
 
-// Fetch a single dress
-// Fetch a single dress
+// Fetch a single dress by ID
 app.get('/dresses/:id', async (req, res) => {
   try {
-    console.log(`🔍 Fetching dress with ID: ${req.params.id}`);
     const dress = await Dress.findById(req.params.id);
-    
     if (!dress) {
-      console.error(`❌ Dress not found for ID: ${req.params.id}`);
-      return res.status(404).send('Dress not found');
+      return res.status(404).json({ message: 'Dress not found' });
     }
-    
-    console.log("✅ Dress Data Fetched:", dress);
     res.json(dress);
   } catch (err) {
-    console.error(`❌ Error fetching dress with ID ${req.params.id}:`, err);
-    res.status(500).send(`Error fetching dress details: ${err.message}`);
+    console.error("Error fetching dress:", err);
+    res.status(500).json({ error: 'Error fetching dress details' });
   }
 });
 
 // Fetch comments for a specific dress
 app.get('/comments/:id', async (req, res) => {
   try {
-    console.log(`🔍 Fetching comments for Dress ID: ${req.params.id}`);
-    const comments = await Comment.find({ dressId: req.params.id });
-    
-    console.log("✅ Comments Data Fetched:", comments);
+    const dressId = new mongoose.Types.ObjectId(req.params.id);  // Convert to ObjectId
+    const comments = await Comment.find({ dressId });
     res.json(comments);
   } catch (err) {
-    console.error(`❌ Error fetching comments for Dress ID ${req.params.id}:`, err);
-    res.status(500).send(`Error fetching comments: ${err.message}`);
+    console.error('Error fetching comments:', err);
+    res.status(500).json({ error: 'Error fetching comments' });
   }
 });
 
 // Add a new comment to a dress
 app.post('/comments/:id', async (req, res) => {
   try {
+    const dressId = new mongoose.Types.ObjectId(req.params.id);  // Convert to ObjectId
     const { user, text, rating } = req.body;
-    console.log(`📝 Adding comment for Dress ID: ${req.params.id}`);
     
     const newComment = new Comment({
-      dressId: req.params.id,
+      dressId,
       user,
       text,
       rating
     });
 
     await newComment.save();
-    console.log("✅ Comment Added:", newComment);
-    res.status(201).send('Comment added successfully');
+    res.status(201).json({ message: 'Comment added successfully', comment: newComment });
   } catch (err) {
-    console.error(`❌ Error adding comment for Dress ID ${req.params.id}:`, err);
-    res.status(500).send(`Error adding comment: ${err.message}`);
+    console.error('Error adding comment:', err);
+    res.status(500).json({ error: 'Error adding comment' });
   }
 });
-
 // Set the server to listen on a port
 const PORT = 4000;
 app.listen(PORT, () => {
