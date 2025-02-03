@@ -41,11 +41,14 @@ const Casual = mongoose.model('Casual', casualSchema);
 app.get('/casuals', async (req, res) => {
   try {
     const casuals = await Casual.find();
+    console.log("✅ Casuals Data Fetched:", casuals); // Debugging
     res.json(casuals);
   } catch (err) {
-    res.status(500).send('Error fetching data');
+    console.error("❌ Database Fetch Error:", err);
+    res.status(500).send(`Error fetching data: ${err.message}`);
   }
 });
+
 
 const partyWearSchema = new mongoose.Schema({
     name: String,
