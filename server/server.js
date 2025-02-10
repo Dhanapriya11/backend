@@ -8,7 +8,11 @@ const cors = require('cors');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: "https://frontend-olive-chi-14.vercel.app",
+  methods: ["GET", "POST"]
+}));
+
 app.use(express.json());
 
 // Connect to MongoDB (replace with your MongoDB URI)
